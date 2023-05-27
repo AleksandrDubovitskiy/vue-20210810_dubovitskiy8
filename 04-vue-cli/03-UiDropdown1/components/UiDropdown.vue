@@ -1,18 +1,26 @@
 <template>
-  <div class="dropdown dropdown_opened">
-    <button type="button" class="dropdown__toggle dropdown__toggle_icon">
-      <ui-icon icon="tv" class="dropdown__icon" />
-      <span>Title</span>
+  <div :class="{ dropdown_opened: isOpened }" class="dropdown">
+    <button
+      @click="dropdownChange"
+      type="button"
+      :class="{ dropdown__toggle_icon: isIconExist }"
+      class="dropdown__toggle"
+    >
+      <ui-icon v-if="icon" :icon="icon" class="dropdown__icon" />
+      <span>{{ displayTitle }}</span>
     </button>
 
-    <div class="dropdown__menu" role="listbox">
-      <button class="dropdown__item dropdown__item_icon" role="option" type="button">
-        <ui-icon icon="tv" class="dropdown__icon" />
-        Option 1
-      </button>
-      <button class="dropdown__item dropdown__item_icon" role="option" type="button">
-        <ui-icon icon="tv" class="dropdown__icon" />
-        Option 2
+    <div v-show="isOpened" class="dropdown__menu" role="listbox">
+      <button
+        v-for="option in options"
+        @click="selectOption(option)"
+        :class="{ dropdown__item_icon: isIconExist }"
+        class="dropdown__item"
+        role="option"
+        type="button"
+      >
+        <ui-icon v-if="option.icon" :icon="option.icon" class="dropdown__icon" />
+        {{ option.text }}
       </button>
     </div>
   </div>
@@ -25,6 +33,54 @@ export default {
   name: 'UiDropdown',
 
   components: { UiIcon },
+  props: {
+    options: Array,
+    title: String,
+    modelValue: String,
+  },
+  emits: ['update:modelValue'],
+  data() {
+    return {
+      isOpened: false,
+      icon: false,
+    };
+  },
+  methods: {
+    dropdownChange() {
+      this.isOpened = !this.isOpened;
+    },
+    selectOption(option) {
+      this.$emit('update:modelValue', option.value);
+      this.icon = option.icon;
+      this.dropdownChange();
+    },
+  },
+  computed: {
+    isIconExist() {
+      let isExist = false;
+      this.options.forEach(function (option) {
+        if (option.icon !== undefined) {
+          isExist = true;
+        }
+      });
+
+      return isExist;
+    },
+    displayTitle() {
+      let title = this.title;
+
+      if (this.modelValue) {
+        this.options.filter((option) => {
+          if (option.value === this.modelValue) {
+            title = option.text;
+            return;
+          }
+        });
+      }
+
+      return title;
+    },
+  },
 };
 </script>
 
