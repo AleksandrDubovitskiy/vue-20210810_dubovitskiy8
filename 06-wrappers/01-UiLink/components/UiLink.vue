@@ -1,7 +1,11 @@
 <template>
-  <a class="link">Link!</a>
+  <a v-if="$attrs.tag === 'a'" :tag="$attrs.tag" :href="$attrs.href">
+    <slot />
+  </a>
+  <div v-else>
+    <router-link v-bind="$attrs"><slot /></router-link>
+  </div>
 </template>
-
 <script>
 export default {
   name: 'UiLink',
