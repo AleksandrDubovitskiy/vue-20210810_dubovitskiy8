@@ -1,10 +1,36 @@
 <template>
-  <button class="button button_secondary button_block">BUTTON</button>
+  <template v-if="tag === 'button'">
+    <button :class="[variant ? 'button_' + variant : 'button_secondary', block ? buttonBlockClass : '']" :type="tag">
+      <slot />
+    </button>
+  </template>
+  <template v-else>
+    <component
+      :class="[variant ? 'button_' + variant : 'button_secondary', block ? buttonBlockClass : '']"
+      :is="tag"
+      v-bind="$attrs"
+    >
+      <slot />
+    </component>
+  </template>
 </template>
 
 <script>
 export default {
   name: 'UiButton',
+  props: {
+    tag: {
+      default: 'button',
+    },
+    variant: String,
+    block: Boolean,
+  },
+  data() {
+    return {
+      buttonClass: 'button_',
+      buttonBlockClass: 'button_block',
+    };
+  },
 };
 </script>
 
