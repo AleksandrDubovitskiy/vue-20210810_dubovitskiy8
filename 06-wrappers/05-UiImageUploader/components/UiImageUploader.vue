@@ -1,8 +1,22 @@
 <template>
   <div class="image-uploader">
-    <label class="image-uploader__preview image-uploader__preview-loading" style="--bg-url: url('/link.jpeg')">
-      <span class="image-uploader__text">Загрузить изображение</span>
-      <input type="file" accept="image/*" class="image-uploader__input" />
+    <label
+      class="image-uploader__preview"
+      :class="{ 'image-uploader__preview-loading': isLoading }"
+      :style="preview ? `--bg-url: url('${selectedPreview}')` : `--bg-url: url('/link.jpeg')`"
+    >
+      <span class="image-uploader__text">
+        {{ displayMessage }}
+      </span>
+      <input
+        ref="file"
+        type="file"
+        class="image-uploader__input"
+        accept="image/*"
+        v-bind="$attrs"
+        @change="uploadFile"
+        @click="remove"
+      />
     </label>
   </div>
 </template>
@@ -10,6 +24,62 @@
 <script>
 export default {
   name: 'UiImageUploader',
+  inheritAttrs: false,
+  props: {
+    preview: [String, undefined],
+    uploader: Function,
+  },
+  emits: ['upload', 'error', 'select', 'remove'],
+  data() {
+    return {
+      selectedFile: undefined,
+      selectedPreview: this.preview,
+      isLoading: false,
+    };
+  },
+  computed: {
+    displayMessage() {
+      let message = 'Загрузить изображение';
+
+      if (this.selectedFile || this.selectedPreview) {
+        message = 'Удалить изображение';
+      }
+
+      if (this.isLoading) {
+        message = 'Загрузка...';
+      }
+
+      return message;
+    },
+  },
+  methods: {
+    uploadFile() {
+      this.selectedFile = this.$refs.file.files[0];
+      if (this.uploader) {
+        this.isLoading = true;
+        this.uploader(this.selectedFile)
+          .then((result) => {
+            this.isLoading = false;
+            this.$emit('upload', result);
+          })
+          .catch((error) => {
+            this.isLoading = false;
+            this.$refs.file.value = '';
+            this.selectedFile = '';
+            this.$emit('error', error);
+          });
+      }
+      this.$emit('select', this.selectedFile);
+    },
+    remove() {
+      this.$refs.file.value = '';
+      this.selectedFile = '';
+      this.selectedPreview = '';
+      if (!this.isLoading) {
+        this.$emit('remove');
+      }
+    },
+  },
 };
 </script>
 
