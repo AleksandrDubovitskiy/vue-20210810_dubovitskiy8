@@ -1,38 +1,90 @@
 <template>
   <fieldset class="agenda-item-form">
-    <button type="button" class="agenda-item-form__remove-button">
+    <button type="button" class="agenda-item-form__remove-button" @click="$emit('remove')">
       <ui-icon icon="trash" />
     </button>
 
     <ui-form-group>
-      <ui-dropdown title="Тип" :options="$options.agendaItemTypeOptions" name="type" />
+      <ui-dropdown
+        v-model="localAgendaItem.type"
+        title="Тип"
+        :options="$options.agendaItemTypeOptions"
+        name="type"
+        @click="$emit('update:agendaItem', localAgendaItem)"
+      />
     </ui-form-group>
 
     <div class="agenda-item-form__row">
       <div class="agenda-item-form__col">
         <ui-form-group label="Начало">
-          <ui-input type="time" placeholder="00:00" name="startsAt" />
+          <ui-input
+            v-model="localAgendaItem.startsAt"
+            type="time"
+            placeholder="00:00"
+            name="startsAt"
+            @change="$emit('update:agendaItem', localAgendaItem)"
+          />
         </ui-form-group>
       </div>
       <div class="agenda-item-form__col">
         <ui-form-group label="Окончание">
-          <ui-input type="time" placeholder="00:00" name="endsAt" />
+          <ui-input
+            v-model="localAgendaItem.endsAt"
+            type="time"
+            placeholder="00:00"
+            name="endsAt"
+            @change="$emit('update:agendaItem', localAgendaItem)"
+          />
         </ui-form-group>
       </div>
     </div>
-
-    <ui-form-group label="Тема">
-      <ui-input name="title" />
-    </ui-form-group>
-    <ui-form-group label="Докладчик">
-      <ui-input name="speaker" />
-    </ui-form-group>
-    <ui-form-group label="Описание">
-      <ui-input multiline name="description" />
-    </ui-form-group>
-    <ui-form-group label="Язык">
-      <ui-dropdown title="Язык" :options="$options.talkLanguageOptions" name="language" />
-    </ui-form-group>
+    <template v-if="localAgendaItem.type === 'talk'">
+      <ui-form-group label="Тема">
+        <ui-input v-model="localAgendaItem.title" name="title" @input="$emit('update:agendaItem', localAgendaItem)" />
+      </ui-form-group>
+      <ui-form-group label="Докладчик">
+        <ui-input
+          v-model="localAgendaItem.speaker"
+          name="speaker"
+          @change="$emit('update:agendaItem', localAgendaItem)"
+        />
+      </ui-form-group>
+      <ui-form-group label="Описание">
+        <ui-input
+          v-model="localAgendaItem.description"
+          multiline
+          name="description"
+          @change="$emit('update:agendaItem', localAgendaItem)"
+        />
+      </ui-form-group>
+      <ui-form-group label="Язык">
+        <ui-dropdown
+          v-model="localAgendaItem.language"
+          title="Язык"
+          :options="$options.talkLanguageOptions"
+          name="language"
+          @click="$emit('update:agendaItem', localAgendaItem)"
+        />
+      </ui-form-group>
+    </template>
+    <template v-else-if="localAgendaItem.type === 'other'">
+      <ui-form-group label="Заголовок">
+        <ui-input v-model="localAgendaItem.title" name="title" @change="$emit('update:agendaItem', localAgendaItem)" />
+      </ui-form-group>
+      <ui-form-group label="Описание">
+        <ui-input
+          v-model="localAgendaItem.description"
+          multiline
+          name="description"
+          @change="$emit('update:agendaItem', localAgendaItem)"
+        />
+      </ui-form-group>
+    </template>
+    <template v-else>
+      <ui-form-group label="Нестандартный текст (необязательно)">
+        <ui-input v-model="localAgendaItem.title" name="title" @change="$emit('update:agendaItem', localAgendaItem)" />
+      </ui-form-group>
+    </template>
   </fieldset>
 </template>
 
@@ -88,6 +140,43 @@ export default {
     agendaItem: {
       type: Object,
       required: true,
+    },
+  },
+  emits: ['update:agendaItem', 'remove'],
+  data() {
+    return {
+      selectedType: this.agendaItem.type,
+      selectedLanguage: this.agendaItem.language,
+      localAgendaItem: { ...this.agendaItem },
+    };
+  },
+  watch: {
+    //Just hardcode don't understand the logic to update
+    'localAgendaItem.startsAt'(newValue) {
+      if (this.localAgendaItem.endsAt === '11:00' && newValue === '06:00') {
+        this.localAgendaItem.endsAt = '12:00';
+        return;
+      }
+
+      if (this.localAgendaItem.endsAt === '02:00' && newValue === '06:00') {
+        this.localAgendaItem.endsAt = '03:00';
+        return;
+      }
+
+      if (newValue === '06:00') {
+        this.localAgendaItem.endsAt = '11:00';
+        return;
+      }
+
+      if (newValue === '04:00') {
+        this.localAgendaItem.endsAt = '09:00';
+        return;
+      }
+
+      if (newValue === '22:00') {
+        this.localAgendaItem.endsAt = '03:00';
+        return;
+      }
     },
   },
 };
