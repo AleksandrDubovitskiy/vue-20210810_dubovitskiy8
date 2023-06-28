@@ -42,6 +42,12 @@ export default {
     },
 
     setData(sensors) {
+      if (this.sensors !== null) {
+        Object.entries(sensors).forEach(([key, value]) => {
+          this.sensors[key] = { ...value };
+        });
+        return;
+      }
       this.sensors = sensors;
     },
   },
