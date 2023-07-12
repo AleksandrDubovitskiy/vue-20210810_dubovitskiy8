@@ -11,5 +11,9 @@ export default {
       validator: (vnodes) => (Array.isArray(vnodes) ? vnodes : [vnodes]).every((mustBeVNode) => isVNode(mustBeVNode)),
     },
   },
+  render() {
+    // use an array to return multiple root nodes
+    return this.vnode;
+  },
 };
 </script>
