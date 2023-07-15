@@ -1,9 +1,7 @@
 <script>
-// import { compile } from 'vue';
-
+import { compile } from 'vue';
 export default {
   name: 'TemplateRenderer',
-
   props: {
     template: {
       type: String,
@@ -19,6 +17,12 @@ export default {
       type: [Object, Array],
       default: () => [],
     },
+  },
+  beforeCreate() {
+    this.$options.components = this.components;
+  },
+  render(...args) {
+    return compile(this.template).apply(this, args);
   },
 };
 </script>
